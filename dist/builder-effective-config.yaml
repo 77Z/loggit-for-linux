@@ -1,0 +1,8 @@
+directories:
+  output: dist
+  buildResources: build
+productName: Loggit
+appId: tk.a77zsite.loggit
+nsis:
+  oneClick: false
+electronVersion: 5.0.7

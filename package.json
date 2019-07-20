@@ -1,0 +1,35 @@
+{
+  "name": "loggit-editor",
+  "version": "1.0.7",
+  "description": "Loggit Lightweight Code Editor",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "electron ."
+  },
+  "keywords": [
+    "loggit",
+    "vince",
+    "richter",
+    "editor",
+    "code",
+    "lightweight",
+    "light",
+    "weight"
+  ],
+  "author": "Vince Richter",
+  "license": "MIT",
+  "dependencies": {
+    "jquery": "^3.4.1",
+    "jshint": "^2.10.2",
+    "node-fetch": "^2.6.0",
+    "ws": "^7.1.0"
+  },
+  "build": {
+    "productName": "Loggit",
+    "appId": "tk.a77zsite.loggit",
+    "nsis": {
+      "oneClick": false
+    }
+  }
+}

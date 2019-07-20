@@ -1,0 +1,4 @@
+{
+    "customContextOptionsEnabled": false,
+    "data": "<li>Custom Option</li>  <li class='cmenu-seperator'></li>  <li>Another Option</li>  <li onclick=\" alert('Okay!'); \">Alert me!</li>"
+}

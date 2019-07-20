@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- <link rel="stylesheet" href="https://77zsite.tk/fonts/fonts.css"> -->
+    <title>
+        Loggit Javascript Debug
+    </title>
+    <style>
+    
+        .top {
+            position: fixed;
+            top: 3px;
+            left: 0;
+            width: 100%;
+            height: 26px;
+            background: #222222;
+            -webkit-app-region: drag;
+            z-index: 9997;
+        }
+
+        .grab-bar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 3px;
+            background: #222222;
+            left: 0;
+            z-index: 9998;
+            -webkit-app-region: no-drag;
+        }
+
+        .woodmark {
+            height: 100%;
+        }
+
+
+        .nav-icon {
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 29px;
+            width: 48px;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: 0.2s;
+            -webkit-app-region: no-drag;
+            z-index: 9999;
+        }
+
+        .nav-icon:hover {
+            background: #ffffff50;
+        }
+
+        .close-nav-btn:hover {
+            background: red;
+        }
+
+        .min-max-nav-btn {
+            right: 48px;
+        }
+
+        .min-nav-btn {
+            right: 96px;
+        }
+
+        .title {
+            font-family: 'Google Sans';
+            font-size: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+            color: white;
+        }
+
+        .console {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            height: calc(100% - 29px);
+            width: 100%;
+            background: #222222;
+            color: white;
+            padding-left: 20px;
+        }
+
+    </style>
+    <script src="vq.min.js"></script>
+    <script>
+    
+        (function() {
+            var realLog = window.console.log;
+            console.log = function(message) {
+                if (typeof message == 'object') {
+                    _('console').append((JSON && JSON.stringify ? JSON.stringify(message) : message) + "<br>");
+                } else {
+                    _('console').append(message + "<br>");
+                }
+                realLog(message);
+            }
+            var realError = window.console.error;
+            console.error = function(message) {
+                if (typeof message == 'object') {
+                    _('console').append("ERROR: " + (JSON && JSON.stringify ? JSON.stringify(message) : message) + "<br>");
+                } else {
+                    _('console').append("ERROR: " + message + "<br>");
+                }
+                realError(message);
+            }
+        })();
+
+        const ipc = require('electron').ipcRenderer
+
+        ipc.on('js-to-run', function(event, js) {
+            runCode(js)
+            //console.log(js);
+        })
+
+        function runCode(codeToRun) {
+            var node = document.createElement('script');
+            var TextNode = document.createTextNode(codeToRun);
+            node.appendChild(TextNode);
+            document.head.appendChild(node);
+        }
+
+    </script>
+</head>
+<body>
+    <div class="grab-bar" id="grab"></div>
+
+    <div class="top" id="top">
+        <span class="title">
+            Loggit Debug&nbsp;&nbsp;&nbsp;&nbsp; <span style="font-weight: normal">Ctrl+R To Reload</span>
+        </span>
+    </div>
+    <!--
+        Window action buttons
+    -->
+    <div class="nav-icon close-nav-btn" id="c-nav" onclick="window.close()">
+        <svg class="" width="10px" height="11px" viewBox="0 0 10 11">
+            <g stroke="none" stroke-width="1" fill="#ffffff" fill-rule="evenodd">
+                <g fill-rule="nonzero" class="fill">
+                    <path d="M5,4.82101759 L0.678982409,0.5 L0,1.17898241 L4.32101759,5.5 L0,9.82101759 L0.678982409,10.5 L5,6.17898241 L9.32101759,10.5 L10,9.82101759 L5.67898241,5.5 L10,1.17898241 L9.32101759,0.5 L5,4.82101759 Z"></path>
+                </g>
+            </g>
+        </svg>
+    </div>
+    <div id="maximize" class="nav-icon min-max-nav-btn">
+        <svg class="" width="10px" height="11px" viewBox="0 0 10 11">
+            <g stroke="none" stroke-width="1" fill="#ffffff" fill-rule="evenodd">
+                <g fill-rule="nonzero" class="fill">
+                    <path d="M1,9 L9,9 L9,1 L1,1 L1,9 Z M0,0 L10,0 L10,10 L0,10 L0,0 Z"></path>
+                </g>
+            </g>
+        </svg>
+    </div>
+    <div id="minimize" class="nav-icon min-nav-btn">
+        <svg class="" width="10px" height="11px" viewBox="0 0 10 11">
+            <g stroke="none" stroke-width="" fill="#ffffff" fill-rule="evenodd">
+                <g class="fill">
+                    <rect id="" x="0" y="5" width="10" height="1"></rect>
+                </g>
+            </g>
+        </svg>
+    </div>
+    <script src="renderer.js"></script>
+    <div class="console" id="console"></div>
+</body>
+</html>

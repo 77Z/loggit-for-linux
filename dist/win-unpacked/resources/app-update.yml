@@ -1,0 +1,4 @@
+owner: 77Z
+repo: loggit-editor
+provider: github
+updaterCacheDirName: loggit-editor-updater

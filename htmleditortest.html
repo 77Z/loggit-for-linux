@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="fonts/fonts.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="codemirror/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="codemirror/lib/codemirror.css">
+    <script src="codemirror/mode/javascript/javascript.js"></script>
+    <script src="codemirror/mode/vbscript/vbscript.js"></script>
+    <script src="codemirror/mode/htmlmixed/htmlmixed.js"></script>
+    <script src="codemirror/mode/css/css.js"></script>
+    <link rel="stylesheet" href="codemirror/theme/material.css">
+    <script src="codemirror/addon/hint/show-hint.js"></script>
+    <link rel="stylesheet" href="codemirror/addon/hint/show-hint.css">
+    <script src="codemirror/addon/hint/javascript-hint.js"></script>
+    <script src="codemirror/addon/hint/xml-hint.js"></script>
+    <script src="codemirror/addon/hint/html-hint.js"></script>
+    <script src="codemirror/addon/hint/css-hint.js"></script>
+    <script src="codemirror/addon/edit/closebrackets.js"></script>
+    <!--<script src="http://unpkg.com/jquery"></script>-->
+    <script>
+    
+    const $ = require('jquery');
+    
+    </script>
+    <title>
+        Harddrive Loggit Editor Online
+    </title>
+    <style>
+        body, html {
+            margin: 0px;
+            background: #263238;
+        }
+
+        * {
+            user-select: none;
+        }
+
+        .content {
+            position: relative;
+        }
+
+        .CodeMirror {
+            font-size: 20px;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        .CodeMirror-hints {
+            background: black;
+            border: none;
+            border-radius: 0px;
+        }
+
+        .CodeMirror-hint {
+            color: white;
+            font-size: 20px;
+        }
+
+        li.CodeMirror-hint-active {
+            border-radius: 0px;
+        }
+
+        .cm-wrap-content {
+            position: absolute;
+            bottom: 0;
+            top: 35px;
+            right: 0;
+            width: 100%;
+        }
+
+        .CodeMirror-hints::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .CodeMirror-hints::-webkit-scrollbar-track {
+            background: black;
+        }
+
+        .CodeMirror-hints::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 1000px;
+        }
+
+        .CodeMirror-hints::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #263238; 
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 1000px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .fab {
+            position: fixed;
+            z-index: 101;
+            bottom: 30px;
+            right: 30px;
+            background: red;
+            color: white;
+            text-align: center;
+            height: 60px;
+            width: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0px 0px 10px rgb(0, 0, 0, 0.7);
+        }
+
+        .fab-content {
+            width: 100%;
+            margin-top: 17px;
+        }
+
+        #submitbox {
+            display: none;
+        }
+    </style>
+    <script>
+
+        
+
+        //toolbar opener
+
+        function openFileToolbarMenu() {
+            var filemenu = document.getElementById("filemenu");
+            var filebtn = document.getElementById("file");
+
+            if (filemenu.style.display == "block") {
+                filemenu.style.display = "none";
+            } else {
+                filemenu.style.display = "block";
+            }
+        }
+
+        function openEditToolbarMenu() {
+            var editmenu = document.getElementById("editmenu");
+            var filebtn = document.getElementById("file");
+
+            if (editmenu.style.display == "block") {
+                editmenu.style.display = "none";
+            } else {
+                editmenu.style.display = "block";
+            }
+        }
+
+        function openViewToolbarMenu() {
+            var viewmenu = document.getElementById("viewmenu");
+            
+            if (viewmenu.style.display == "block") {
+                viewmenu.style.display = "none";
+            } else {
+                viewmenu.style.display = "block";
+            }
+        }
+
+
+
+
+        //toolbar buttons
+
+        function exit() {
+            window.close();
+        }
+
+        //window click functions
+
+        //window.onclick = function() {
+        //    var filemenu = document.getElementById("filemenu");
+        //    var filebtn = document.getElementById("file");
+        //
+        //    filebtn.style.background = "transparent";
+        //
+        //    filemenu.style.display = "none";
+        //}
+
+
+        //dialog
+
+        function showDialog(title, content) {
+            var dialogContent = document.getElementById("dialogContent");
+            var dialog = document.getElementById("dialog");
+
+            dialogContent.innerHTML = "<h1>" + title + "</h1><p>" + content + "</p>";
+
+            dialog.style.display = "block";
+        }
+
+        function closeDialog() {
+            dialog.style.display = "none";
+        }
+
+        function newFile() {
+            window.location.href = "index.html";
+        }
+    </script>
+
+    <script>
+    
+        //const {app, dialog, globalShortcut} = require('electron')
+
+        //app.on('ready', () => {
+        //    globalShortcut.register('CmdOrCtrl+K', () => {
+        //        dialog.showMessageBox({
+        //            type: 'info',
+        //            message: 'yey',
+        //            detail: 'keystroke pressed',
+        //            buttons: ['OK']
+        //        })
+        //    })
+        //})
+
+        //app.on('will-quit', () => {
+        //    globalShortcut.unregisterAll()
+        //})
+
+
+
+    </script>
+</head>
+<body>
+    <div class="content">
+        <textarea id="codemirror-text">
+</textarea>
+            
+    </div>
+
+    <div class="material-icons fab" id="fab">
+        <div class="fab-content">
+            save
+        </div>
+    </div>
+
+<textarea id="submitbox" cols="30" rows="30"></textarea>
+
+    <script>
+            var mixedMode = {
+                name: "htmlmixed",
+                scriptTypes: [{matches: /\/x-handlebars-template|\/x-mustache/i,
+                            mode: null},
+                            {matches: /(text|application)\/(x-)?vb(a|script)/i,
+                            mode: "vbscript"}]
+            };
+            var precode = $("#codemirror-text")[0];
+            var editor = CodeMirror.fromTextArea(precode, {
+                lineNumbers: true,
+                theme: "material",
+                extraKeys: {"Ctrl-Space" : "autocomplete"},
+                autoCloseBrackets: true,
+                mode: mixedMode
+            });
+            editor.on("keypress", function (cm, event) {
+                if (!cm.state.completionActive && 
+                    event.charCode != 13 && event.charCode != 123) {
+                    CodeMirror.commands.autocomplete(cm, null, {completeSingle: false});
+                }
+            });
+
+
+            $('#fab').click(function() {
+                var content = editor.getValue();
+
+                document.getElementById('submitbox').innerHTML = content;
+
+                var savedContent = document.getElementById('submitbox').value;
+
+                document.location.href = "submit.php?fn=<?= $fn ?>&content=" + savedContent;
+            });
+    </script>
+
+</body>
+</html>

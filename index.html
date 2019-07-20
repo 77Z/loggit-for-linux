@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <!-- Codemirror scripts -->
+
+    <script src="codemirror/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="codemirror/lib/codemirror.css">
+
+    <!-- Javascript Scripts -->
+    <script src="codemirror/mode/javascript/javascript.js"></script>
+
+    <!-- Theme -->
+    <link rel="stylesheet" href="codemirror/theme/material.css">
+    
+    <!-- Code Hinting -->
+    <script src="codemirror/addon/hint/show-hint.js"></script>
+    <link rel="stylesheet" href="codemirror/addon/hint/show-hint.css">
+    <script src="codemirror/addon/hint/javascript-hint.js"></script>
+
+    <!-- Code Folding -->
+    <script src="codemirror/addon/fold/foldcode.js"></script>
+    <script src="codemirror/addon/fold/foldgutter.js"></script>
+    <script src="codemirror/addon/fold/comment-fold.js"></script>
+    <script src="codemirror/addon/fold/brace-fold.js"></script>
+    <link rel="stylesheet" href="codemirror/addon/fold/foldgutter.css">
+
+    <!-- Code Linting -->
+    <script src="codemirror/addon/lint/javascript-lint.js"></script>
+    <script src="codemirror/addon/lint/lint.js"></script>
+    <link rel="stylesheet" href="codemirror/addon/lint/lint.css">
+
+    <!-- JSLINT -->
+    <script src="editor/jshint.js"></script>
+
+    <!-- Close Brackets -->
+    <script src="codemirror/addon/edit/closebrackets.js"></script>
+
+    <!-- Find Tools -->
+    <script src="codemirror/addon/search/search.js"></script>
+    <script src="codemirror/addon/search/searchcursor.js"></script>
+    <script src="codemirror/addon/search/jump-to-line.js"></script>
+
+    <script src="codemirror/addon/dialog/dialog.js"></script>
+    <link rel="stylesheet" href="codemirror/addon/dialog/dialog.css">
+
+    <!-- Minimap -->
+    <script src="pagemap.js"></script>
+
+    <!-- Jquery, Node File system and others -->
+    <script>
+        const $ = require('jquery');
+        const fs = require('fs');
+        const {ipcRenderer} = require('electron')
+        const {BrowserWindow} = require('electron').remote
+        const path = require('path')
+        const os = require('os');
+        const homedir = os.homedir()
+        const loggitDir = homedir + "/.loggit"
+        const configDir = homedir + "/.loggit/config";
+        //const JSHINT = require('jshint')
+    </script>
+
+    <!-- VQ -->
+    <script src="vq.min.js"></script>
+
+
+    <script>
+
+        function quit() {
+            ipcRenderer.send('quit-action');
+        }
+    
+        var WorkspaceDir = null;
+        var CurrentWorkingFile = null;
+        var AutoSave = false;
+        var appDir = null;
+
+
+        _().ready(() => {
+            ipcRenderer.send('get-app-dir');
+        })
+        
+        ipcRenderer.on('app-dir-return', (event, path) => {
+            if (!path) console.error("No path");
+            appDir = path;
+            console.log(path);
+        })
+
+        //if (appDir == null) {
+        //    console.error("somethin' wrong!");
+        //}
+
+        //get user settings
+        let rawdata = fs.readFileSync(configDir + '/settings.json');
+        let parsedUserSettings = JSON.parse(rawdata);
+
+        console.log(parsedUserSettings);
+
+        //check for a workspace
+        if (parsedUserSettings.defaultWorkspace == null) {
+            var WorkspaceDir = null;
+        } else {
+            var WorkspaceDir = parsedUserSettings.defaultWorkspace;
+        }
+
+        //check for auto save
+        if (parsedUserSettings.autoSave == true) {
+            //autoSave enabled
+            AutoSave = true;
+            setInterval(function() {
+                SaveCurrentFile()
+            }, parsedUserSettings.autoSaveDelay)
+        } else {
+            //autoSave disabled
+            AutoSave = false;
+        }
+
+    </script>
+
+    <title>
+        Loggit for Linux!
+    </title>
+    <!-- <link rel="stylesheet" href="https://77zsite.tk/fonts/fonts.css"> -->
+    <style>
+
+        body {
+            background: #263238;
+            overflow-x: hidden;
+        	font-family: sans-serif;
+        }
+    
+        .top {
+            position: fixed;
+            top: 3px;
+            left: 0;
+            width: 100%;
+            height: 26px;
+            background: #222222;
+            -webkit-app-region: drag;
+            z-index: 9997;
+            transition: 0.3s;
+            font-family: sans-serif;
+        }
+
+        .grab-bar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 3px;
+            background: #222222;
+            left: 0;
+            z-index: 9998;
+            -webkit-app-region: no-drag;
+            transition: 0.3s;
+        }
+
+        .woodmark {
+            height: 100%;
+        }
+
+
+        .nav-icon {
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 29px;
+            width: 48px;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: 0.2s;
+            -webkit-app-region: no-drag;
+            z-index: 9999;
+        }
+
+        .nav-icon:hover {
+            background: #ffffff50;
+        }
+
+        .close-nav-btn:hover {
+            background: red;
+        }
+
+        .min-max-nav-btn {
+            right: 48px;
+        }
+
+        .min-nav-btn {
+            right: 96px;
+        }
+
+        .title {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+            color: white;
+        }
+
+        .content {
+            position: fixed;
+            top: 29px;
+            right: 0;
+            width: 80%;
+            height: calc(100% - 53px);
+        }
+
+        .CodeMirror {
+            font-size: 20px;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        .CodeMirror-hints {
+            background: black;
+            border: none;
+            border-radius: 0px;
+        }
+
+        .CodeMirror-hint {
+            color: white;
+            font-size: 20px;
+        }
+
+        li.CodeMirror-hint-active {
+            border-radius: 0px;
+        }
+
+        .cm-wrap-content {
+            position: absolute;
+            bottom: 0;
+            top: 35px;
+            right: 0;
+            width: 100%;
+        }
+
+        .CodeMirror-hints::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .CodeMirror-hints::-webkit-scrollbar-track {
+            background: black;
+        }
+
+        .CodeMirror-hints::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 1000px;
+        }
+
+        .CodeMirror-hints::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /*::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #263238; 
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 1000px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }*/
+
+        ::-webkit-scrollbar {
+            width: 20px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #151b1f;
+            border: 5px solid #263238;
+            border-radius: 1000px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cecece; 
+            border: 6px solid #263238;
+            border-radius: 1000px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555; 
+        }
+
+        .bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 24px;
+            background: rgb(0, 0, 200);
+        }
+
+        .side {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 20%;
+            height: 100%;
+            background: #222222;
+            padding-top: 30px;
+            overflow-y: scroll;
+        }
+
+        .side::-webkit-scrollbar {
+            width: 10px;
+            border-radius: 0px;
+        }
+
+        .side::-webkit-scrollbar-track {
+            background: #000000;
+            border-radius: 0px;
+            border: none;
+        }
+
+        .side::-webkit-scrollbar-thumb {
+            background: #cecece;
+            border-radius: 0px;
+            border: none;
+            border-right: 3px solid black;
+            border-left: 3px solid black;
+        }
+
+        .side::-webkit-scrollbar-thumb:hover {
+            background: #bbbbbb; 
+        }
+
+        .files-listing {
+            list-style: none;
+            padding: 0px;
+            text-align: center;
+        }
+        
+        .files-listing li {
+            padding: 0px;
+            margin: 0px;
+            color: white;
+            font-family: sans-serif;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .files-listing li:hover {
+            background: #ffffff50;
+        }
+
+        #select-workspace {
+            text-align: center;
+            border: none;
+            background: blue;
+            color: white;
+            margin: 0px auto;
+            user-select: none;
+            outline: none;
+            width: 150px;
+            cursor: pointer;
+            margin-left: calc(50% - 75px);
+            font-size: 18px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgb(0, 0, 0, 0.3);
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        #list-style-popup {
+            position: fixed;
+            z-index: 9999;
+            top: 50%;
+            left: 50%;
+            width: 500px;
+            height: 200px;
+            margin-left: -250px;
+            margin-top: -100px;
+            border-radius: 5px;
+            background: #111111;
+            box-shadow: 0px 0px 20px rgb(0, 0, 0, 0.6);
+            color: white;
+            font-family: sans-serif;
+            display: none;
+        }
+
+        .list-style-popup-inner-hr {
+            width: 70%;
+            border: none;
+            border-bottom: 2px solid white;
+        }
+
+        #list-style-popup-inner-title {
+            font-size: 32px;
+            font-weight: 900;
+            text-transform: uppercase;
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+
+        #list-style-popup-inner-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            margin-top: 10px;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* Minimap Style */
+        #map {
+            position: fixed;
+            top: 29px;
+            right: 20px;
+            width: 200px;
+            height: 100%;
+        }
+
+        #CMENU {
+            background: #182024;
+            padding: 10px;
+            position: absolute;
+            width: 250px;
+            height: fit-content;
+            display: none;
+            box-shadow: 0px 0px 15px rgba(50, 163, 255, 0.6);
+            border-radius: 5px;
+        }
+
+        .cmenu-options {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            height: fit-content;
+            width: 100%;
+            background: transparent;
+        }
+
+        .cmenu-options li:not(.cmenu-seperator) {
+            padding: 5px 0px 5px 0px;
+            cursor: pointer;
+            font-family: sans-serif;
+            transition: 0.1s;
+            color: white;
+        }
+
+        .cmenu-options li:hover:not(.cmenu-seperator) {
+            background: #ffffff50;
+        }
+
+        .cmenu-seperator {
+            padding: 0px;
+            margin-top: 5px;
+            border-bottom: 2px solid white;
+            margin-bottom: 5px;
+            cursor: default;
+        }
+
+        .cmenu-seperator:hover {
+            background: transparent;
+        }
+
+        .popbox {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            background: #222222;
+            box-shadow: 0px 0px 10px rgb(0, 0, 0, 0.3);
+            border-radius: 5px;
+            color: white;
+            font-family: sans-serif;
+            transform: scale(0.01);
+            transition: 0.2s;
+            display: none;
+        }
+
+        .popbox span {
+            font-size: 40px;
+            display: block;
+            text-align: center;
+        }
+
+        #popbox-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        #popbox-list li {
+            transition: 0.2s;
+        }
+
+        #popbox-list li:hover {
+            background: #ffffff50;
+        }
+
+        .CodeMirror-lint-tooltip {
+            z-index: 9999;
+        }
+    
+        .gutter-test {
+            width: 50px;
+            background: red;
+        }
+
+        .display-working-file {
+            padding-left: 21%;
+            font-size: 20px;
+            color: white;
+            font-family: sans-serif;
+        }
+
+        .snackbar {
+            position: fixed;
+            /*bottom: 30px;*/
+            bottom: -30px;
+            width: 300px;
+            left: 50%;
+            margin-left: -150px;
+            background: #333333;
+            box-shadow: 0px 0px 10px rgb(0, 0, 0, 0.6);
+            border-radius: 5px;
+            color: white;
+            font-size: 20px;
+            height: 25px;
+            text-align: center;
+            font-family: sans-serif;
+            font-weight: bold;
+            user-select: none;
+            transition: 0.3s;
+        }
+
+        .snackbar-show {
+            bottom: 30px;
+        }
+
+    </style>
+</head>
+<body id="body">
+    <!--
+        Allows resizing window from top
+    -->
+    <div class="grab-bar" id="grab"></div>
+
+    <div class="top" id="top">
+        <span class="title">
+            Loggit for Linux!
+        </span>
+    </div>
+    <!--
+        Window action buttons
+    -->
+    <div class="nav-icon close-nav-btn" id="c-nav" onclick="window.close()">
+        <svg class="" width="10px" height="11px" viewBox="0 0 10 11">
+            <g stroke="none" stroke-width="1" fill="#ffffff" fill-rule="evenodd">
+                <g fill-rule="nonzero" class="fill">
+                    <path d="M5,4.82101759 L0.678982409,0.5 L0,1.17898241 L4.32101759,5.5 L0,9.82101759 L0.678982409,10.5 L5,6.17898241 L9.32101759,10.5 L10,9.82101759 L5.67898241,5.5 L10,1.17898241 L9.32101759,0.5 L5,4.82101759 Z"></path>
+                </g>
+            </g>
+        </svg>
+    </div>
+    <div id="maximize" class="nav-icon min-max-nav-btn">
+        <svg class="" width="10px" height="11px" viewBox="0 0 10 11">
+            <g stroke="none" stroke-width="1" fill="#ffffff" fill-rule="evenodd">
+                <g fill-rule="nonzero" class="fill">
+                    <path d="M1,9 L9,9 L9,1 L1,1 L1,9 Z M0,0 L10,0 L10,10 L0,10 L0,0 Z"></path>
+                </g>
+            </g>
+        </svg>
+    </div>
+    <div id="minimize" class="nav-icon min-nav-btn">
+        <svg class="" width="10px" height="11px" viewBox="0 0 10 11">
+            <g stroke="none" stroke-width="" fill="#ffffff" fill-rule="evenodd">
+                <g class="fill">
+                    <rect id="" x="0" y="5" width="10" height="1"></rect>
+                </g>
+            </g>
+        </svg>
+    </div>
+    <script src="renderer.js"></script>
+    <div class="content" oncontextmenu="return showEditorContextMenu(event)">
+        <textarea id="codemirror-text"></textarea>
+    </div>
+    <div class="bottom">
+        <span class="display-working-file" id="display-working-file">
+            No current working file
+        </span>
+
+        <span id="cleanFileDisplay"></span>
+    </div>
+
+    <div class="side" id="side">
+        <ul class="files-listing" id="files-listing">
+            <script>
+                if (WorkspaceDir == null) {
+                    _('side').append("<button id='select-workspace'>Select Workspace</button>");
+                } else {
+                    _('side').append("<button id='select-workspace' style='display:none'>Select Workspace</button>");
+                    openDIR(WorkspaceDir);
+                }
+
+                function openDIR(path) {
+                    fs.readdir(path, function(err, items) {
+                        console.log("Files in directory: " + items);
+
+                        for (var i = 0; i < items.length; i++) {
+                            var node = document.createElement('li');
+                            node.setAttribute('id', 'file-in-bar');
+                            node.setAttribute('onclick', 'readFileAndSet(\"' + items[i] + '\")');
+                            var textnode = document.createTextNode(items[i]);
+                            node.appendChild(textnode);
+                            document.getElementById('files-listing').appendChild(node);
+                        }
+                    });
+                }
+            </script>
+        </ul>
+    </div>
+
+    <div class="popbox" id="popbox">
+        <span id="popbox-title">
+            NULL
+        </span>
+        <hr>
+        <ul id="popbox-list"></ul>
+    </div>
+
+    <!-- Minimap Markup -->
+    <canvas id="map"></canvas>
+
+    <div id="CMENU">
+        <ul class="cmenu-options" id="cmenu-options">
+            <li onclick="editor.execCommand('find')">
+                Find
+            </li>
+            <li class="cmenu-seperator"></li>
+            <li onclick="copyEvent()">
+                Copy
+            </li>
+            <li onclick="pasteEvent()">
+                Paste
+            </li>
+            <li class="cmenu-seperator"></li>
+            <li onclick="editor.execCommand('undo')">
+                Undo
+            </li>
+            <li onclick="editor.execCommand('redo')">
+                Redo
+            </li>
+        </ul>
+    </div>
+
+    <div class="snackbar" id="snackbar">Default Text</div>
+
+
+
+    <script>
+
+        function foldCodeEvent() {
+            editor.execCommand('fold');
+            console.log("folded");
+        }
+
+        function snackbar(content) {
+            _('snackbar').edit(content);
+
+            document.getElementById('snackbar').classList.add("snackbar-show");
+
+            setTimeout(function() {
+                document.getElementById('snackbar').classList.remove('snackbar-show');
+            }, 2000);
+        }
+
+        function updateCleanFileDisplay() {
+            if (!editor.isClean()) {
+                _('cleanFileDisplay').edit("*");
+            } else {
+                _('cleanFileDisplay').empty();
+            }
+        }
+
+        function updateWorkingFileDisplay() {
+            if (CurrentWorkingFile !== null) {
+                _('display-working-file').edit("Working on: " + CurrentWorkingFile);
+            } else {
+                _('display-working-file').edit("No current working file");
+            }
+        }
+
+            function showEditorContextMenu(event) {
+                var contenxtMenu = document.getElementById('CMENU');
+
+                contenxtMenu.style.display = 'block';
+
+                contenxtMenu.style.left = event.clientX + "px";
+                contenxtMenu.style.top = event.clientY + "px";
+
+                return false;
+            }
+
+            window.onclick = function() {
+                //Hide Editor Context Menu
+                document.getElementById('CMENU').style.display = "none";
+
+                //close PopBox
+                _('popbox').style('transform', 'scale(0.01)');
+                setTimeout(() => {
+                    _('popbox').style('display', 'none');
+                }, 200)
+
+                updateWorkingFileDisplay();
+
+                editor.markClean();
+                updateCleanFileDisplay();
+
+                //console.log("window clicked");
+            }
+
+            //minimap functionality
+
+            //pagemap(document.querySelector("#map"));
+
+            pagemap(document.querySelector('#map'), {
+                viewport: null,
+                styles: {
+                    '.cm-keyword': 'rgba(199, 146, 234, 1)',
+                    '.cm-operator': 'rgba(233, 237, 237, 1)',
+                    '.cm-variable-2': 'rgba(128, 203, 196, 1)',
+                    '.cm-variable-3': 'rgba(130, 177, 255, 1)',
+                    '.cm-builtin': 'rgba(222, 203, 107, 1)',
+                    '.cm-atom': 'rgba(247, 118, 105, 1)',
+                    '.cm-number': 'rgba(247, 118, 105, 1)',
+                    '.cm-def': 'rgba(233, 237, 237, 1)',
+                    '.cm-string': 'rgba(195, 232, 141, 1)',
+                    '.cm-string-2': 'rgba(128, 203, 196, 1)',
+                    '.cm-comment': 'rgba(84, 110, 122, 1)',
+                    '.cm-variable': 'rgba(130, 177, 255, 1)',
+                    '.cm-tag': 'rgba(128, 203, 196, 1)',
+                    '.cm-meta': 'rgba(128, 203, 196, 1)',
+                    '.cm-attribute': 'rgba(255, 203, 107, 1)',
+                    '.cm-property': 'rgba(128, 203, 174, 1)',
+                    '.cm-qualifier': 'rgba(222, 203, 107, 1)'//,
+                    //'.CodeMirror': 'rgba(255,0,0,1)'
+                },
+                back: 'rgba(0,0,0,0.02)',
+                view: 'rgba(0,0,0,0.05)',
+                drag: 'rgba(0,0,0,0.10)',
+                interval: null
+            });
+
+            //const {globalShortcut} = require('electron')
+    
+            //globalShortcut.register('F1', () => {
+            //    alert('hi')
+            //})
+
+            
+    
+            //user settings
+            var isAutoCompleteEnabled = parsedUserSettings.isAutoCompleteEnabled;
+            var isLineNumbers = parsedUserSettings.isLineNumbers;
+            var isAutoCloseBrackets = parsedUserSettings.isAutoCloseBrackets;
+            var indentSize = parsedUserSettings.indentSize;
+            var editorDirection = parsedUserSettings.editorDirection;
+            var lineWrapping = parsedUserSettings.lineWrapping;
+    
+            var editVars = {
+                setLineNumbers: function(boolean) {
+                    isLineNumbers = boolean;
+                    loggit().resetEditor();
+                },
+                setAutoCloseBrackets: function(boolean) {
+                    isAutoCloseBrackets = boolean;
+                    loggit().resetEditor();
+                },
+                setAutoComplete: function(boolean) {
+                    isAutoCompleteEnabled = boolean;
+                    loggit().resetEditor();
+                }
+            }
+    
+            function loggit() {
+                const loggit = {}
+                loggit.log = function(message) {
+                    console.log(`%c[Loggit] %c${message}`, 'color: purple', 'color: normal');
+                }
+                loggit.resetEditor = function() {
+                    editor.setOption('AutoCloseBrackets', parsedUserSettings.isAutoCloseBrackets);
+                    editor.setOption('lineNumbers', parsedUserSettings.isLineNumbers);
+                    editor.setOption('lineWrapping', lineWrapping);
+                    editor.setOption('direction', editorDirection);
+                }
+                loggit.recheckValues = function() {
+                    if (isLineNumbers == true) {
+                        loggit().log("Line numbers are enabled");
+                    } else {
+                        loggit().log("Line numbers are disabled");
+                    }
+                    if (isAutoCloseBrackets == true) {
+                        loggit().log("AutoCloseBrackets is enabled");
+                    } else {
+                        loggit().log("AutoCloseBrackets is disabled");
+                    }
+                }
+                loggit.insertAtCursor = function (text) {
+                    var doc = editor.getDoc();
+                    var cursor = doc.getCursor();
+                    doc.replaceRange(text, cursor);
+                }
+                return loggit;
+            }
+
+            function copyEvent() {
+                ipcRenderer.send('copy-to-clipboard', editor.getSelection());
+            }
+
+            function pasteEvent() {
+                //request for the content of the clipboard from the main
+                ipcRenderer.send('get-clipboard-contents');
+            }
+
+            ipcRenderer.on('clipboard-contents', (event, content) => {
+                //insert the contents of the clipboard into CodeMirror
+                loggit().insertAtCursor(content);
+                console.log("Clipboard Content: " + content);
+            })
+    
+    
+            _().ready(() => {
+
+                let userCTXrawdata = fs.readFileSync(configDir + '/user-ctx-menu.json');
+                let parsedUserCTX = JSON.parse(userCTXrawdata);
+
+                console.log(parsedUserCTX);
+
+                if (parsedUserCTX.customContextOptionsEnabled == true) {
+                    _('cmenu-options').append('<li class="cmenu-seperator"></li>' + parsedUserCTX.data);
+                    loggit().log("Custom Editor Context Menu Options Enabled");
+                }
+
+                if (parsedUserSettings.useOsTitleBar == true) {
+                    //remove custom title bar
+                    var bar = document.querySelector('#top');
+                    var content = document.querySelector('.content');
+
+                    
+                    document.querySelector('.nav-icon').setAttribute('style', 'display: none');
+                    document.querySelector('.min-max-nav-btn').setAttribute('style', 'display: none');
+                    document.querySelector('.min-nav-btn').setAttribute('style', 'display: none');
+
+
+                    bar.setAttribute('style', 'display: none');
+
+                    content.setAttribute('style', 'height: calc(100% - 24px); top: 0;');
+                }
+
+                if (parsedUserSettings.workspaceBarVisible == false) {
+                    //make bar dissapear
+                    loggit().log("make bar dissapear");
+                    var side = document.querySelector('.side');
+                    var content = document.querySelector('.content');
+
+                    side.setAttribute('style', 'left: -20%');
+                    content.setAttribute('style', 'width: 100%');
+                }
+
+                if (isLineNumbers == true) {
+                    loggit().log("Line numbers are enabled");
+                } else {
+                    loggit().log("Line numbers are disabled");
+                }
+                if (isAutoCloseBrackets == true) {
+                    loggit().log("AutoCloseBrackets is enabled");
+                } else {
+                    loggit().log("AutoCloseBrackets is disabled");
+                }
+
+                var fullscreen = false;
+
+                //TODO: finish fullscreen
+                _(document).keydown("F11", () => {
+                    if(fullscreen == false) {
+                        document.querySelector('.CodeMirror').setAttribute('style', 'position: fixed; top: 0; left: 0; width: 100%; height: 100%');
+                        document.getElementById('top').style.display = "none";
+                        document.getElementById('grab').style.display = "none";
+                        document.querySelector('.bottom').setAttribute('style', 'display: none;');
+                        maximizeRenderer();
+                        fullscreen = true;
+                    } else {
+                        document.querySelector(".CodeMirror").setAttribute('style', '');
+                        document.getAnimations('top').style.display = "block";
+                        document.getElementById('grab').style.display = "block";
+                        document.querySelector('.bottom').setAttribute('style', '');
+                        unmaximizeRenderer();
+                        fullscreen = false;
+                    }
+                    
+                })
+
+                //_(document).keydown("F2", () => {
+                //    loggit().resetEditor();
+                //})
+
+                _(document).keydown("F9", () => {
+                    loggitWindow().craeteInHouseListDialog({
+                        height: 300,
+                        width: 500,
+                        title: 'Select Language',
+                        in: `<li onclick='loggitLangs().changeToCss()'>CSS</li>`
+                    })
+                })
+
+                _(document).keydown("F5", () => {
+                    //debug
+                    //TODO: add list selection for debug
+                    loggitWindow().craeteInHouseListDialog({
+                        height: 300,
+                        width: 500,
+                        title: 'Select Debugger',
+                        in: `<li onclick='javascriptDebug()'>Javascript</li>`
+                    })
+                    //javascriptDebug();
+                })
+
+                _('select-workspace').click(() => {
+                    ipcRenderer.send('open-file-dialog');
+                })
+
+                if (parsedUserSettings.miniMap == false) {
+                    _('map').style('display', 'none');
+                }
+            })
+
+            ipcRenderer.on('selected-directory', (event, path) => {
+                openDIR(`${path}`);
+                WorkspaceDir = path;
+                _('select-workspace').style('display', 'none');
+            })
+
+            ipcRenderer.on('save-request', (event) => {
+                console.log('save requested');
+                SaveCurrentFile();
+            })
+
+            ipcRenderer.on('saved-file', (event, path) => {
+                if (!path) path = 'No path';
+                console.log("saving...");
+                fs.writeFile(path, editor.getValue(), function(err) {
+                    if (err) throw err;
+                })
+                console.log("Saved!");
+                snackbar("Saved! Setting working file");
+                CurrentWorkingFile = path;
+                updateWorkingFileDisplay();
+            })
+
+            ipcRenderer.on('copyEvent', (event) => {
+                copyEvent();
+            })
+
+            ipcRenderer.on('fold-request', (event) => {
+                foldCodeEvent();
+            })
+
+            ipcRenderer.on('close-working-file-request', (event) => {
+                closeWorkingFile();
+            })
+
+            function closeWorkingFile() {
+                if (CurrentWorkingFile == null) {
+                    snackbar("No file open");
+                } else {
+                    snackbar("closing...");
+                    editor.setValue("");
+                    CurrentWorkingFile = null;
+                    editor.markClean();
+                    updateWorkingFileDisplay();
+                }
+            }
+
+            function javascriptDebug() {
+                const modalPath = path.join('file://', __dirname, 'JSdebug.html')
+                let JSdebugWin = new BrowserWindow({
+                    width: 1200,
+                    height: 700,
+                    frame: false,
+                    webPreferences: {
+                        nodeIntegration: true
+                    },
+                    minWidth: 900,
+                    minHeight: 600,
+                    backgroundColor: "#222222"
+                })
+
+                JSdebugWin.on('close', () => {
+                    JSdebugWin = null
+                    _('top').attr('style', '')
+                    _('grab').attr('style', '')
+                })
+                JSdebugWin.loadURL(modalPath)
+                //JSdebugWin.webContents.openDevTools()
+                JSdebugWin.show()
+                JSdebugWin.webContents.on('did-finish-load', () => {
+                    JSdebugWin.webContents.send('js-to-run', editor.getValue());
+                })
+
+                _('top').style('background', 'orange');
+                _('grab').style('background', 'orange');
+
+                ipcRenderer.on('js-debug-devTools', function() {
+                    JSdebugWin.webContents.openDevTools()
+                    console.log("opened Dev Tools For JS Debug");
+                })
+            }
+
+            
+
+            function readFileAndSet(filename) {
+                //get contents of a file
+                fs.readFile(WorkspaceDir + "\\" + filename, 'utf8', function(err, contents) {
+                    if (err) throw err;
+                    editor.setValue(contents);
+                })
+                CurrentWorkingFile = WorkspaceDir + "\\" + filename;
+                editor.markClean();
+                updateWorkingFileDisplay();
+            }
+
+            function readFileAndReturn(filenameIncludingDir) {
+                fs.readFile(filenameIncludingDir, 'utf8', function(err, contents) {
+                    if (err) throw err;
+                    return contents;
+                })
+            }
+
+            function loggitLangs() {
+                const loggitLangs = {};
+                loggitLangs.changeToCss = function() {
+                    var node = document.createElement('script');
+                    node.setAttribute('src', 'codemirror/mode/css/css.js');
+                    document.head.appendChild(node);
+                    editor.setOption('mode', 'css');
+                }
+                return loggitLangs;
+            }
+
+            function loggitWindow() {
+                const loggitwin = {};
+                loggitwin.craeteInHouseListDialog = function(options) {
+                    _('popbox').style('width', options.width + "px");
+                    _('popbox').style('height', options.height + "px");
+
+                    _('popbox').style('margin-left', "-" + options.width / 2 + "px");
+                    _('popbox').style('margin-top', "-" + options.height / 2 + "px");
+
+                    _('popbox-title').edit(options.title);
+
+                    _('popbox-list').edit(options.in);
+
+                    _('popbox').style('display', 'block');
+
+                    setTimeout(() => {
+                        _('popbox').style('transform', 'scale(1)');
+                    }, 10);
+                }
+                return loggitwin;
+            }
+
+            function SaveCurrentFile() {
+                if (CurrentWorkingFile == null) {
+                    //no specific file working on
+                    //open save dialog
+                    console.log("no specific file working on");
+                    ipcRenderer.send('save-dialog');
+                } else {
+                    //working on a file
+                    //save to that file
+                    console.log("saving...");
+                    fs.writeFile(CurrentWorkingFile, editor.getValue(), function(err) {
+                        if (err) throw err;
+                    })
+                    console.log("Saved!");
+                    snackbar("Saved!");
+                    editor.markClean();
+                    updateCleanFileDisplay();
+                }
+            }
+    
+        //$(document).ready(function() {
+            var precode = $("#codemirror-text")[0];
+            
+            var editor = CodeMirror.fromTextArea(precode, {
+                lineNumbers: isLineNumbers,
+                theme: 'material',
+                extraKeys: {"Ctrl-Space" : "autocomplete"},
+                autoCloseBrackets: isAutoCloseBrackets,
+                indentUnit: indentSize,
+                direction: editorDirection,
+                tabSize: indentSize,
+                lineWrapping: lineWrapping,
+                foldCode: true,
+                foldGutter: true,
+                gutters: ["CodeMirror-lint-markers", "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+                lint: parsedUserSettings.codeLinting
+            });
+            //createEditor(precode, isLineNumbers, isAutoCloseBrackets);
+    
+            //check if autocomplete is enabled:
+            if (isAutoCompleteEnabled == true) {
+                editor.on("keypress", function(cm, event) {
+                    if (!cm.state.completionActive &&
+                    event.charCode != 13 && event.charCode != 123) {
+                        CodeMirror.commands.autocomplete(cm, null, {completeSingle: false});
+                    }
+                })
+                loggit().log("Auto Complete is enabled!");
+            } else {
+                loggit().log("Auto Complete is disabled\n\nYou can still use it by pressing Ctrl+Space");
+            }
+    
+            //alert(editor.getValue());
+            
+        //})
+    
+        function createAnchoredContextMenu(anchorPoint, yAnchorPushoff, xAnchorPushoff) {
+    
+            var RandomMath = Math.random();
+            var RandomMathToString = RandomMath.toString();
+            var splitMath = RandomMathToString.split('.');
+    
+            var contextMenuid = "contextMenu" + splitMath[1];
+    
+            var tempNode = document.createElement("div");
+            tempNode.setAttribute('id', contextMenuid);
+            document.body.appendChild(tempNode);
+    
+    
+            _(contextMenuid).append("<ul></ul>");
+    
+            if (anchorPoint == "bottomLeft") {
+                _(contextMenuid).style("bottom", yAnchorPushoff);
+                _(contextMenuid).style("left", xAnchorPushoff);
+            }
+        }
+
+        function editSettingsJSON() {
+            var node = document.createElement('div');
+            node.setAttribute('class', 'content');
+            node.setAttribute('id', 'json-edit-panel');
+            document.body.appendChild(node);
+            //var oldAppDir = appDir;
+            //var newAppDir = oldAppDir.substring(0, str.length - 5);
+            var settingsContentTemp = readFileAndReturn(/*newAppDir + */"C:\\Users\\r2d2f\\OneDrive\\Desktop\\loggit-editor-revised\\config\\settings.json");
+            _('json-edit-panel').append("<textarea id='settings-json-codemirror'>" + settingsContentTemp + "</textarea>");
+            //load json scripts
+
+            var jsonScriptNode = document.createElement('script');
+            jsonScriptNode.setAttribute('src', '')
+
+            //load editor
+            //var precode = $("#settings-json-codemirror")[0];
+            //
+            //var editorSettingsJSON = CodeMirror.fromTextArea(precode, {
+            //    lineNumbers: isLineNumbers,
+            //    theme: 'material',
+            //    extraKeys: {"Ctrl-Space" : "autocomplete"},
+            //    autoCloseBrackets: isAutoCloseBrackets,
+            //    indentUnit: indentSize,
+            //    direction: editorDirection,
+            //    tabSize: indentSize,
+            //    mode: {name: "javascript", json: true}
+            //});
+            ////createEditor(precode, isLineNumbers, isAutoCloseBrackets);
+    //
+            ////check if autocomplete is enabled:
+            //if (isAutoCompleteEnabled == true) {
+            //    editor.on("keypress", function(cm, event) {
+            //        if (!cm.state.completionActive &&
+            //        event.charCode != 13 && event.charCode != 123) {
+            //            CodeMirror.commands.autocomplete(cm, null, {completeSingle: false});
+            //        }
+            //    })
+            //    loggit().log("Auto Complete is enabled!");
+            //} else {
+            //    loggit().log("Auto Complete is disabled\n\nYou can still use it by pressing Ctrl+Space");
+            //}
+        }
+    
+        //function createEditor(precode, isLineNumbersEnabled, isAutoCloseBracketsEnabled) {
+        //    var editor = CodeMirror.fromTextArea(precode, {
+        //        lineNumbers: isLineNumbersEnabled,
+        //        theme: 'material',
+        //        extraKeys: {"Ctrl-Space" : "autocomplete"},
+        //        autoCloseBrackets: isAutoCloseBracketsEnabled
+        //    });
+        //}
+        
+        </script>
+</body>
+</html>

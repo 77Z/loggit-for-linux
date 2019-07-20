@@ -1,0 +1,22 @@
+This "user-ctx-menu.json" file is to allow you to add your own custom entries to the editor context menu.
+
+These entries can execute functions.
+
+Writing it is just like an HTML List
+(see https://www.w3schools.com/html/html_lists.asp)
+
+Just don't use <ul> or <ol>.
+
+
+
+Entries can be defined as <li>{ content here! }</li>
+and Seperators (A line seperating entries) can be defined as <li class='cmenu-seperator'></li> .
+Click events can be declared in an <li> like: <li onclick=\" { javascript here! } \">{ content here! }</li>
+
+Here is a template for the file:
+
+{ "data": "<li>Custom Option</li>  <li class='cmenu-seperator'></li>  <li>Another Option</li>  <li onclick=\" alert('Okay!'); \">Alert me!</li>" }
+
+
+To enable and disable the custom context menu, set customContextOptionsEnabled to true/false.
+

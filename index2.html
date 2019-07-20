@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <!-- Codemirror scripts -->
+
+    <script src="codemirror/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="codemirror/lib/codemirror.css">
+
+    <!-- Javascript Scripts -->
+    <script src="codemirror/mode/javascript/javascript.js"></script>
+
+    <!-- Theme -->
+    <link rel="stylesheet" href="codemirror/theme/material.css">
+    
+    <!-- Code Hinting -->
+    <script src="codemirror/addon/hint/show-hint.js"></script>
+    <link rel="stylesheet" href="codemirror/addon/hint/show-hint.css">
+    <script src="codemirror/addon/hint/javascript-hint.js"></script>
+    
+    <!-- Close Brackets -->
+    <script src="codemirror/addon/edit/closebrackets.js"></script>
+
+    <!-- Jquery -->
+    <script>
+        const $ = require('jquery');
+    </script>
+
+    <!-- VQ -->
+    <script src="https://77zsite.tk/vq.min.js"></script>
+
+
+    <title>
+        Loggit
+    </title>
+    <link rel="stylesheet" href="https://77zsite.tk/fonts/fonts.css">
+    <style>
+    
+        .top {
+            position: fixed;
+            top: 3px;
+            left: 0;
+            width: 100%;
+            height: 26px;
+            background: #222222;
+            -webkit-app-region: drag;
+            z-index: 9997;
+        }
+
+        .grab-bar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 3px;
+            background: #222222;
+            left: 0;
+            z-index: 9998;
+            -webkit-app-region: no-drag;
+        }
+
+        .woodmark {
+            height: 100%;
+        }
+
+
+        .nav-icon {
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 29px;
+            width: 48px;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: 0.2s;
+            -webkit-app-region: no-drag;
+            z-index: 9999;
+        }
+
+        .nav-icon:hover {
+            background: #ffffff50;
+        }
+
+        .close-nav-btn:hover {
+            background: red;
+        }
+
+        .min-max-nav-btn {
+            right: 48px;
+        }
+
+        .min-nav-btn {
+            right: 96px;
+        }
+
+        .title {
+            font-family: 'Google Sans';
+            font-size: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+            color: white;
+        }
+
+        .content {
+            position: fixed;
+            top: 29px;
+            right: 0;
+            width: 80%;
+            height: calc(100% - 29px);
+        }
+
+        .CodeMirror {
+            font-size: 20px;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        .CodeMirror-hints {
+            background: black;
+            border: none;
+            border-radius: 0px;
+        }
+
+        .CodeMirror-hint {
+            color: white;
+            font-size: 20px;
+        }
+
+        li.CodeMirror-hint-active {
+            border-radius: 0px;
+        }
+
+        .cm-wrap-content {
+            position: absolute;
+            bottom: 0;
+            top: 35px;
+            right: 0;
+            width: 100%;
+        }
+
+        .CodeMirror-hints::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .CodeMirror-hints::-webkit-scrollbar-track {
+            background: black;
+        }
+
+        .CodeMirror-hints::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 1000px;
+        }
+
+        .CodeMirror-hints::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /*::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #263238; 
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 1000px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }*/
+
+        ::-webkit-scrollbar {
+            width: 20px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #151b1f;
+            border: 5px solid #263238;
+            border-radius: 1000px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cecece; 
+            border: 6px solid #263238;
+            border-radius: 1000px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555; 
+        }
+
+        .bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 24px;
+            background: rgb(0, 0, 200);
+        }
+
+        .side {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 20%;
+            height: 100%;
+            background: #222222;
+        }
+    
+    </style>
+</head>
+<body id="body">
+    <div class="grab-bar" id="grab"></div>
+    <div class="top" id="top">
+        <span class="title">
+            Loggit
+        </span>
+    </div>
+    <div class="nav-icon close-nav-btn" id="c-nav" onclick="window.close()">
+        <svg class="" width="10px" height="11px" viewBox="0 0 10 11">
+            <g stroke="none" stroke-width="1" fill="#ffffff" fill-rule="evenodd">
+                <g fill-rule="nonzero" class="fill">
+                    <path d="M5,4.82101759 L0.678982409,0.5 L0,1.17898241 L4.32101759,5.5 L0,9.82101759 L0.678982409,10.5 L5,6.17898241 L9.32101759,10.5 L10,9.82101759 L5.67898241,5.5 L10,1.17898241 L9.32101759,0.5 L5,4.82101759 Z"></path>
+                </g>
+            </g>
+        </svg>
+    </div>
+    <div id="maximize" class="nav-icon min-max-nav-btn">
+        <svg class="" width="10px" height="11px" viewBox="0 0 10 11">
+            <g stroke="none" stroke-width="1" fill="#ffffff" fill-rule="evenodd">
+                <g fill-rule="nonzero" class="fill">
+                    <path d="M1,9 L9,9 L9,1 L1,1 L1,9 Z M0,0 L10,0 L10,10 L0,10 L0,0 Z"></path>
+                </g>
+            </g>
+        </svg>
+    </div>
+    <div id="minimize" class="nav-icon min-nav-btn">
+        <svg class="" width="10px" height="11px" viewBox="0 0 10 11">
+            <g stroke="none" stroke-width="" fill="#ffffff" fill-rule="evenodd">
+                <g class="fill">
+                    <rect id="" x="0" y="5" width="10" height="1"></rect>
+                </g>
+            </g>
+        </svg>
+    </div>
+    <script src="renderer.js"></script>
+    <div class="content">
+        <textarea id="codemirror-text">function hi() {
+    document.querySelector(".hi").innerHTML = "hi";
+}</textarea>
+    </div>
+    <div class="bottom">
+        <div id="extras-btn"></div>
+    </div>
+    <div class="side"></div>
+
+
+
+    <script>
+
+            //const {globalShortcut} = require('electron')
+    
+            //globalShortcut.register('F1', () => {
+            //    alert('hi')
+            //})
+
+            const fs = require('fs');
+
+            let rawdata = fs.readFileSync('config/settings.json');
+            let parsedUserSettings = JSON.parse(rawdata);
+
+            console.log(parsedUserSettings);
+    
+            //user settings
+            var isAutoCompleteEnabled = parsedUserSettings.isAutoCompleteEnabled;
+            var isLineNumbers = parsedUserSettings.isLineNumbers;
+            var isAutoCloseBrackets = parsedUserSettings.isAutoCloseBrackets;
+    
+            var editVars = {
+                setLineNumbers: function(boolean) {
+                    isLineNumbers = boolean;
+                    loggit().resetEditor();
+                },
+                setAutoCloseBrackets: function(boolean) {
+                    isAutoCloseBrackets = boolean;
+                    loggit().resetEditor();
+                },
+                setAutoComplete: function(boolean) {
+                    isAutoCompleteEnabled = boolean;
+                    loggit().resetEditor();
+                }
+            }
+    
+            function loggit() {
+                const loggit = {}
+                loggit.log = function(message) {
+                    console.log(`%c[Loggit] %c${message}`, 'color: purple', 'color: black');
+                }
+                loggit.resetEditor = function() {
+                    var cmEditor = document.querySelector(".CodeMirror");
+                    cmEditor.remove();
+    
+                    console.clear();
+    
+    
+                    var precode = $("#codemirror-text")[0];
+            
+                    var editor = CodeMirror.fromTextArea(precode, {
+                        lineNumbers: isLineNumbers,
+                        theme: 'material',
+                        extraKeys: {"Ctrl-Space" : "autocomplete"},
+                        autoCloseBrackets: isAutoCloseBrackets
+                    });
+                    //createEditor(precode, isLineNumbers, isAutoCloseBrackets);
+    
+                    //check if autocomplete is enabled:
+                    if (isAutoCompleteEnabled == true) {
+                        editor.on("keypress", function(cm, event) {
+                            if (!cm.state.completionActive &&
+                            event.charCode != 13 && event.charCode != 123) {
+                                CodeMirror.commands.autocomplete(cm, null, {completeSingle: false});
+                            }
+                        })
+                        //loggit().log("Auto Complete is enabled!");
+                    } else {
+                        //loggit().log("Auto Complete is disabled\n\nYou can still use it by pressing Ctrl+Space");
+                    }
+                }
+                loggit.recheckValues = function() {
+                    if (isLineNumbers == true) {
+                        loggit().log("Line numbers are enabled");
+                    } else {
+                        loggit().log("Line numbers are disabled");
+                    }
+                    if (isAutoCloseBrackets == true) {
+                        loggit().log("AutoCloseBrackets is enabled");
+                    } else {
+                        loggit().log("AutoCloseBrackets is disabled");
+                    }
+                }
+                return loggit;
+            }
+    
+    
+            _().ready(() => {
+                if (isLineNumbers == true) {
+                    loggit().log("Line numbers are enabled");
+                } else {
+                    loggit().log("Line numbers are disabled");
+                }
+                if (isAutoCloseBrackets == true) {
+                    loggit().log("AutoCloseBrackets is enabled");
+                } else {
+                    loggit().log("AutoCloseBrackets is disabled");
+                }
+
+                var fullscreen = false;
+
+                _(document).keydown("F11", () => {
+                    if(fullscreen == false) {
+                        document.querySelector('.CodeMirror').setAttribute('style', 'position: fixed; top: 0; left: 0; width: 100%; height: 100%');
+                        document.getElementById('top').style.display = "none";
+                        document.getElementById('grab').style.display = "none";
+                        document.querySelector('.bottom').setAttribute('style', 'display: none;');
+                        maximizeRenderer();
+                        fullscreen = true;
+                    } else {
+                        document.querySelector(".CodeMirror").setAttribute('style', '');
+                        document.getAnimations('top').style.display = "block";
+                        document.getElementById('grab').style.display = "block";
+                        document.querySelector('.bottom').setAttribute('style', '');
+                        unmaximizeRenderer();
+                        fullscreen = false;
+                    }
+                    
+                })
+            })
+    
+        //$(document).ready(function() {
+            var precode = $("#codemirror-text")[0];
+            
+            var editor = CodeMirror.fromTextArea(precode, {
+                lineNumbers: isLineNumbers,
+                theme: 'material',
+                extraKeys: {"Ctrl-Space" : "autocomplete"},
+                autoCloseBrackets: isAutoCloseBrackets
+            });
+            //createEditor(precode, isLineNumbers, isAutoCloseBrackets);
+    
+            //check if autocomplete is enabled:
+            if (isAutoCompleteEnabled == true) {
+                editor.on("keypress", function(cm, event) {
+                    if (!cm.state.completionActive &&
+                    event.charCode != 13 && event.charCode != 123) {
+                        CodeMirror.commands.autocomplete(cm, null, {completeSingle: false});
+                    }
+                })
+                loggit().log("Auto Complete is enabled!");
+            } else {
+                loggit().log("Auto Complete is disabled\n\nYou can still use it by pressing Ctrl+Space");
+            }
+    
+            //alert(editor.getValue());
+            
+        //})
+    
+        function createAnchoredContextMenu(anchorPoint, yAnchorPushoff, xAnchorPushoff) {
+    
+            var RandomMath = Math.random();
+            var RandomMathToString = RandomMath.toString();
+            var splitMath = RandomMathToString.split('.');
+    
+            var contextMenuid = "contextMenu" + splitMath[1];
+    
+            var tempNode = document.createElement("div");
+            tempNode.setAttribute('id', contextMenuid);
+            document.body.appendChild(tempNode);
+    
+    
+            _(contextMenuid).append("<ul></ul>");
+    
+            if (anchorPoint == "bottomLeft") {
+                _(contextMenuid).style("bottom", yAnchorPushoff);
+                _(contextMenuid).style("left", xAnchorPushoff);
+            }
+        }
+    
+        //function createEditor(precode, isLineNumbersEnabled, isAutoCloseBracketsEnabled) {
+        //    var editor = CodeMirror.fromTextArea(precode, {
+        //        lineNumbers: isLineNumbersEnabled,
+        //        theme: 'material',
+        //        extraKeys: {"Ctrl-Space" : "autocomplete"},
+        //        autoCloseBrackets: isAutoCloseBracketsEnabled
+        //    });
+        //}
+        
+        </script>
+</body>
+</html>

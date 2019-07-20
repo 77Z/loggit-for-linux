@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://77zsite.tk/vq.min.js"></script>
+    <script>
+
+        (function() {
+            var old = console.log;
+            console.log = function(message) {
+                if (typeof message == 'object') {
+                    _('_body').append((JSON && JSON.stringify ? JSON.stringify(message) : message) + "<br />");
+                } else {
+                    _('_body').append(message + "<br />");
+                }
+            }
+        })();
+    
+        _().ready(() => {
+            _('im').click(() => {
+                var node = document.createElement('script');
+                node.setAttribute('src', 'random.js');
+                document.head.appendChild(node);
+            });
+            
+            _('run').click(() => {
+                hi();
+            })
+        })
+
+    </script>
+</head>
+<body>
+    <button id="im">
+        Import Script
+    </button>
+    <button id="run">
+        Run Script
+    </button>
+</body>
+</html>

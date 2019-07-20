@@ -1,0 +1,18 @@
+{
+    "_comment": "In the editor you can press Ctrl+Shift+Alt+R To relaunch the editor. You can also press Ctrl+R to reload the editor",
+
+    "isAutoCloseBrackets": true,
+    "isLineNumbers": true,
+    "isAutoCompleteEnabled": true,
+    "defaultWorkspace": null,
+    "autoSave": false,
+    "autoSaveDelay": 500,
+    "indentSize": 2,
+    "editorDirection": "ltr",
+    "lineWrapping": false,
+    "workspaceBarVisible": true,
+    "useOsTitleBar": false,
+    "openEditorDevToolsOnStart": false,
+    "codeLinting": true,
+    "miniMap": true
+}
