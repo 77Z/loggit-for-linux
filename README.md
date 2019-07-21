@@ -13,6 +13,7 @@
 
 [![77Z Build Status](https://img.shields.io/badge/77Z_build-passing-green.svg)](https://77zsite.tk/builds/loggit-for-linux)
 
+### There are no releases?!!?
 
 # How to run unbuilt versions
 ### things you WILL need:
@@ -35,6 +36,10 @@ there is a settings.json file. It allows you to customize the editor by changing
 it is located in ``~/.loggit`` folder under ``config/settings.json``
 
 The next section will show you how to apply those things to the editor itself.
+
+# Building
+
+Build it however you want! I just wanna finish it before releasing it!
 
 # Applying settings
 
